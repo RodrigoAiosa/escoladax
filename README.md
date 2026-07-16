@@ -8,10 +8,10 @@ Plataforma gamificada para aprender **boas práticas de DAX** (Power BI) — na 
 
 - **📚 Práticas** — 30 boas práticas de DAX organizadas por categoria (Fundamentos, Contexto de Filtro, Iteradoras, Time Intelligence, Modelagem, Performance) e nível (Iniciante, Intermediário, Avançado). Cada uma compara o jeito **❌ Evitar** com o jeito **✅ Preferir**, com explicação.
 - **🧩 Simulador de Fórmulas** — exercícios de múltipla escolha: dado um cenário de negócio, escolha a fórmula DAX correta.
-- **✍️ Escreva sua Fórmula** — escolha entre o **modelo padrão** (schema fixo `Fato_Vendas` + dimensões) ou **🏢 Gerar por Setor**: selecione um setor (Varejo, Financeiro, Saúde, E-commerce, Logística, Educação, Imobiliário, SaaS B2B), gere um modelo estrela real com até 10 mil linhas na tabela fato e relacionamentos íntegros, e pratique DAX em cima dele. Inclui:
+- **✍️ Escreva sua Fórmula** — escolha um setor (Varejo, Financeiro, Saúde, E-commerce, Logística, Educação, Imobiliário, SaaS B2B) e gere um modelo estrela real com até 10 mil linhas na tabela fato e relacionamentos íntegros, para praticar DAX em cima dele. Inclui:
   - **Destaque de sintaxe** (funções, tabelas/colunas, strings, números coloridos)
-  - **Corretor** com exercícios guiados (sempre baseados no modelo padrão) e validação por padrões
-  - **Modo livre** para escrever fórmulas sobre qualquer schema — padrão ou gerado por setor — com avisos gerais de boas práticas (parênteses desbalanceados, uso de `/` em vez de `DIVIDE`, sugestão de correção para nomes de função digitados errado)
+  - **Exercícios guiados** com validação por padrões (usam um modelo conceitual fixo de referência, independente do setor gerado)
+  - **Modo livre** para escrever fórmulas sobre o setor gerado, com avisos gerais de boas práticas (parênteses desbalanceados, uso de `/` em vez de `DIVIDE`, sugestão de correção para nomes de função digitados errado)
 - **🎯 Desafios semanais**, **🏆 Badges** e **📊 Perfil** — sistema de XP, níveis e conquistas para manter o engajamento.
 
 > ⚠️ Importante: como o DAX depende do motor do Power BI/Analysis Services, este projeto **não executa DAX de verdade**. A correção é baseada em reconhecimento de padrões de texto (a lógica esperada precisa aparecer na fórmula), não em cálculo real sobre dados.

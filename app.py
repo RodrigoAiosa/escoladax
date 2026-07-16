@@ -724,28 +724,19 @@ with tab3:
     st.markdown('<h3 class="section-header">✍️ Escreva sua Própria Fórmula DAX</h3>', unsafe_allow_html=True)
     st.markdown(
         "Digite uma medida DAX do zero. Seu código é **destacado por sintaxe** automaticamente "
-        "e **corrigido** com base em boas práticas. Escolha abaixo qual modelo de dados usar como referência."
+        "e **corrigido** com base em boas práticas."
     )
 
-    # ------------------------------------------------------------------
-    # FONTE DO MODELO DE DADOS: padrão fixo ou gerado por setor
-    # ------------------------------------------------------------------
-    opcoes_fonte = ["📋 Modelo padrão (fixo)"]
-    if GERADOR_BI_DISPONIVEL:
-        opcoes_fonte.append("🏢 Gerar por Setor")
-
-    fonte_dados = st.radio(
-        "Fonte do modelo de dados:",
-        opcoes_fonte,
-        horizontal=True,
-        key="dax_fonte_dados",
-    )
-
-    if fonte_dados == "🏢 Gerar por Setor" and GERADOR_BI_DISPONIVEL:
+    if not GERADOR_BI_DISPONIVEL:
+        st.error(
+            "⚠️ O pacote `generators_bi` não foi encontrado. Ele precisa estar na raiz do projeto "
+            "(mesmo nível de `app.py`) para esta aba funcionar."
+        )
+    else:
         # ------------------------------------------------------------------
         # MODELO GERADO POR SETOR
         # ------------------------------------------------------------------
-        st.markdown('<h4 class="section-header">🏢 Modelo Gerado por Setor</h4>', unsafe_allow_html=True)
+        st.markdown('<h4 class="section-header">🏢 Modelo de Dados por Setor</h4>', unsafe_allow_html=True)
         st.caption(
             "Escolha um setor e gere um modelo estrela (fato + dimensões) real, com relacionamentos "
             "íntegros, para praticar DAX em cima dele."
@@ -779,7 +770,7 @@ with tab3:
         dados_setor_dax = st.session_state.get("dax_dados_setor")
 
         if not dados_setor_dax:
-            st.info("👆 Escolha um setor e clique em **Gerar Tabelas do Setor** para ver o modelo aqui.")
+            st.info("👆 Escolha um setor e clique em **Gerar Tabelas do Setor** para começar.")
         else:
             setor_atual_dax = st.session_state.get("dax_setor_atual")
             fato_key_dax = next(k for k in dados_setor_dax if k.startswith("Fato"))
@@ -807,66 +798,8 @@ with tab3:
             st.markdown(relacoes_txt)
 
             st.caption(
-                "💡 Use exatamente esses nomes de tabela e coluna nas suas fórmulas no Modo Livre, mais abaixo. "
-                "Os exercícios guiados continuam usando o modelo padrão (Fato_Vendas)."
+                "💡 Use exatamente esses nomes de tabela e coluna nas suas fórmulas no Modo Livre, mais abaixo."
             )
-
-    # ------------------------------------------------------------------
-    # MODELO DE EXEMPLO — FATO E DIMENSÕES (padrão fixo)
-    # ------------------------------------------------------------------
-    st.markdown('<h4 class="section-header">🗂️ Modelo de Dados Padrão</h4>', unsafe_allow_html=True)
-    st.caption("Use exatamente estes nomes de tabela e coluna nos exercícios guiados abaixo — é sobre eles que o corretor valida.")
-
-    col_fato, col_dim = st.columns([1.3, 1])
-
-    with col_fato:
-        st.markdown("**⭐ Fato_Vendas** (tabela fato)")
-        df_fato = pd.DataFrame({
-            "DataID": [1, 1, 2, 3, 3],
-            "ClienteID": [101, 102, 101, 103, 102],
-            "ProdutoID": [201, 202, 201, 203, 202],
-            "Quantidade": [2, 1, 3, 1, 5],
-            "ValorUnitario": [120.0, 350.0, 120.0, 90.0, 350.0],
-            "ValorTotal": [240.0, 350.0, 360.0, 90.0, 1750.0],
-        })
-        st.dataframe(df_fato, use_container_width=True, hide_index=True)
-
-    with col_dim:
-        st.markdown("**📦 Dim_Produto**")
-        df_produto = pd.DataFrame({
-            "ProdutoID": [201, 202, 203],
-            "NomeProduto": ["Fone Bluetooth", "Smartwatch", "Mouse Sem Fio"],
-            "Categoria": ["Eletrônicos", "Eletrônicos", "Eletrônicos"],
-            "Custo": [60.0, 180.0, 35.0],
-        })
-        st.dataframe(df_produto, use_container_width=True, hide_index=True)
-
-    col_cli, col_cal = st.columns(2)
-    with col_cli:
-        st.markdown("**👤 Dim_Cliente**")
-        df_cliente = pd.DataFrame({
-            "ClienteID": [101, 102, 103],
-            "NomeCliente": ["Ana Souza", "Bruno Lima", "Carla Dias"],
-            "Estado": ["SP", "RJ", "SP"],
-            "Segmento": ["Varejo", "Corporativo", "E-commerce"],
-        })
-        st.dataframe(df_cliente, use_container_width=True, hide_index=True)
-
-    with col_cal:
-        st.markdown("**📅 Dim_Calendario** (marcada como tabela de datas)")
-        df_calendario = pd.DataFrame({
-            "DataID": [1, 2, 3],
-            "Data": ["2026-01-05", "2026-01-12", "2026-02-01"],
-            "Ano": [2026, 2026, 2026],
-            "Mes": [1, 1, 2],
-        })
-        st.dataframe(df_calendario, use_container_width=True, hide_index=True)
-
-    st.markdown(
-        "Relacionamentos: `Fato_Vendas[ProdutoID]` → `Dim_Produto[ProdutoID]` · "
-        "`Fato_Vendas[ClienteID]` → `Dim_Cliente[ClienteID]` · "
-        "`Fato_Vendas[DataID]` → `Dim_Calendario[DataID]`"
-    )
 
     st.divider()
 
@@ -954,6 +887,13 @@ with tab3:
     # ------------------------------------------------------------------
     # EXERCÍCIOS GUIADOS (validados por padrão, não por execução real)
     # ------------------------------------------------------------------
+    st.markdown('<h4 class="section-header">🎯 Exercícios Guiados</h4>', unsafe_allow_html=True)
+    st.caption(
+        "Estes exercícios usam um modelo conceitual fixo: tabela fato **Fato_Vendas** "
+        "(colunas: DataID, ClienteID, ProdutoID, Quantidade, ValorUnitario, ValorTotal) e dimensões "
+        "**Dim_Produto**, **Dim_Cliente**, **Dim_Calendario** — os nomes usados em cada enunciado abaixo."
+    )
+
     exercicios_escrita = [
         {
             "titulo": "1. Soma simples",
