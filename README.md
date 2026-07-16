@@ -8,10 +8,10 @@ Plataforma gamificada para aprender **boas práticas de DAX** (Power BI) — na 
 
 - **📚 Práticas** — 30 boas práticas de DAX organizadas por categoria (Fundamentos, Contexto de Filtro, Iteradoras, Time Intelligence, Modelagem, Performance) e nível (Iniciante, Intermediário, Avançado). Cada uma compara o jeito **❌ Evitar** com o jeito **✅ Preferir**, com explicação.
 - **🧩 Simulador de Fórmulas** — exercícios de múltipla escolha: dado um cenário de negócio, escolha a fórmula DAX correta.
-- **✍️ Escreva sua Fórmula** — um mini-modelo de dados de exemplo (`Fato_Vendas` + dimensões `Dim_Produto`, `Dim_Cliente`, `Dim_Calendario`) para praticar. Inclui:
+- **✍️ Escreva sua Fórmula** — escolha entre o **modelo padrão** (schema fixo `Fato_Vendas` + dimensões) ou **🏢 Gerar por Setor**: selecione um setor (Varejo, Financeiro, Saúde, E-commerce, Logística, Educação, Imobiliário, SaaS B2B), gere um modelo estrela real com até 10 mil linhas na tabela fato e relacionamentos íntegros, e pratique DAX em cima dele. Inclui:
   - **Destaque de sintaxe** (funções, tabelas/colunas, strings, números coloridos)
-  - **Corretor** com exercícios guiados e validação por padrões
-  - **Modo livre** para escrever e receber avisos gerais de boas práticas (parênteses desbalanceados, uso de `/` em vez de `DIVIDE`, sugestão de correção para nomes de função digitados errado)
+  - **Corretor** com exercícios guiados (sempre baseados no modelo padrão) e validação por padrões
+  - **Modo livre** para escrever fórmulas sobre qualquer schema — padrão ou gerado por setor — com avisos gerais de boas práticas (parênteses desbalanceados, uso de `/` em vez de `DIVIDE`, sugestão de correção para nomes de função digitados errado)
 - **🎯 Desafios semanais**, **🏆 Badges** e **📊 Perfil** — sistema de XP, níveis e conquistas para manter o engajamento.
 
 > ⚠️ Importante: como o DAX depende do motor do Power BI/Analysis Services, este projeto **não executa DAX de verdade**. A correção é baseada em reconhecimento de padrões de texto (a lógica esperada precisa aparecer na fórmula), não em cálculo real sobre dados.
@@ -38,8 +38,12 @@ Acesse em `http://localhost:8501`.
 
 ```
 escoladax/
-├── app.py              # aplicação Streamlit completa
-├── requirements.txt     # dependências (streamlit, pandas)
+├── app.py                  # aplicação Streamlit completa
+├── generators_bi/          # geradores de dados fictícios por setor (fato + dimensões)
+│   ├── __init__.py
+│   ├── helpers.py
+│   └── setores.py
+├── requirements.txt         # dependências (streamlit, pandas, numpy, faker)
 ├── README.md
 ├── LICENSE
 └── .gitignore

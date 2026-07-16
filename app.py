@@ -2,7 +2,14 @@ import streamlit as st
 import re
 import html
 import difflib
+from datetime import date
 import pandas as pd
+
+try:
+    from generators_bi import SETORES, RELACIONAMENTOS
+    GERADOR_BI_DISPONIVEL = True
+except ImportError:
+    GERADOR_BI_DISPONIVEL = False
 
 st.set_page_config(
     page_title="DAX - Melhores Práticas Pro",
@@ -717,15 +724,98 @@ with tab3:
     st.markdown('<h3 class="section-header">✍️ Escreva sua Própria Fórmula DAX</h3>', unsafe_allow_html=True)
     st.markdown(
         "Digite uma medida DAX do zero. Seu código é **destacado por sintaxe** automaticamente "
-        "e **corrigido** com base em boas práticas e em um exercício guiado, usando o modelo de "
-        "exemplo abaixo (fato + dimensões)."
+        "e **corrigido** com base em boas práticas. Escolha abaixo qual modelo de dados usar como referência."
     )
 
     # ------------------------------------------------------------------
-    # MODELO DE EXEMPLO — FATO E DIMENSÕES
+    # FONTE DO MODELO DE DADOS: padrão fixo ou gerado por setor
     # ------------------------------------------------------------------
-    st.markdown('<h4 class="section-header">🗂️ Modelo de Dados de Exemplo</h4>', unsafe_allow_html=True)
-    st.caption("Use exatamente estes nomes de tabela e coluna nas suas fórmulas — é sobre eles que o corretor valida.")
+    opcoes_fonte = ["📋 Modelo padrão (fixo)"]
+    if GERADOR_BI_DISPONIVEL:
+        opcoes_fonte.append("🏢 Gerar por Setor")
+
+    fonte_dados = st.radio(
+        "Fonte do modelo de dados:",
+        opcoes_fonte,
+        horizontal=True,
+        key="dax_fonte_dados",
+    )
+
+    if fonte_dados == "🏢 Gerar por Setor" and GERADOR_BI_DISPONIVEL:
+        # ------------------------------------------------------------------
+        # MODELO GERADO POR SETOR
+        # ------------------------------------------------------------------
+        st.markdown('<h4 class="section-header">🏢 Modelo Gerado por Setor</h4>', unsafe_allow_html=True)
+        st.caption(
+            "Escolha um setor e gere um modelo estrela (fato + dimensões) real, com relacionamentos "
+            "íntegros, para praticar DAX em cima dele."
+        )
+
+        col_setor, col_datas, col_linhas = st.columns([1.2, 1.4, 1])
+        with col_setor:
+            setor_dax = st.selectbox("Setor", list(SETORES.keys()), key="dax_setor_select")
+        with col_datas:
+            sub_ini, sub_fim = st.columns(2)
+            with sub_ini:
+                data_ini_dax = st.date_input("Início", value=date(2023, 1, 1), key="dax_data_ini")
+            with sub_fim:
+                data_fim_dax = st.date_input("Fim", value=date(2023, 12, 31), key="dax_data_fim")
+        with col_linhas:
+            n_linhas_dax = st.slider(
+                "Linhas (fato)", min_value=100, max_value=10_000,
+                value=500, step=100, key="dax_n_linhas",
+            )
+
+        if st.button("🚀 Gerar Tabelas do Setor", type="primary", key="dax_gerar_setor"):
+            if data_fim_dax <= data_ini_dax:
+                st.error("A data final deve ser posterior à data inicial.")
+            else:
+                with st.spinner(f"Gerando dados de {setor_dax}..."):
+                    fn = SETORES[setor_dax]
+                    st.session_state.dax_dados_setor = fn(n_linhas_dax, data_ini_dax, data_fim_dax)
+                    st.session_state.dax_setor_atual = setor_dax
+                st.rerun()
+
+        dados_setor_dax = st.session_state.get("dax_dados_setor")
+
+        if not dados_setor_dax:
+            st.info("👆 Escolha um setor e clique em **Gerar Tabelas do Setor** para ver o modelo aqui.")
+        else:
+            setor_atual_dax = st.session_state.get("dax_setor_atual")
+            fato_key_dax = next(k for k in dados_setor_dax if k.startswith("Fato"))
+            dim_keys_dax = [k for k in dados_setor_dax if k.startswith("Dim")]
+
+            col_m1, col_m2 = st.columns(2)
+            col_m1.metric("Setor gerado", setor_atual_dax)
+            col_m2.metric("Linhas na tabela fato", f"{len(dados_setor_dax[fato_key_dax]):,}")
+
+            st.markdown(f"**⭐ {fato_key_dax}** (tabela fato)")
+            st.dataframe(dados_setor_dax[fato_key_dax].head(10), use_container_width=True, hide_index=True)
+
+            st.markdown("**📦 Dimensões**")
+            cols_dim = st.columns(min(len(dim_keys_dax), 3) or 1)
+            for i, dim_nome in enumerate(dim_keys_dax):
+                with cols_dim[i % len(cols_dim)]:
+                    st.markdown(f"**{dim_nome}**")
+                    st.dataframe(dados_setor_dax[dim_nome].head(5), use_container_width=True, hide_index=True)
+
+            st.markdown("**🔗 Relacionamentos:**")
+            relacoes_txt = " · ".join(
+                f"`{origem}[{coluna}]` → `{destino}[{pk}]`"
+                for origem, coluna, destino, pk in RELACIONAMENTOS.get(setor_atual_dax, [])
+            )
+            st.markdown(relacoes_txt)
+
+            st.caption(
+                "💡 Use exatamente esses nomes de tabela e coluna nas suas fórmulas no Modo Livre, mais abaixo. "
+                "Os exercícios guiados continuam usando o modelo padrão (Fato_Vendas)."
+            )
+
+    # ------------------------------------------------------------------
+    # MODELO DE EXEMPLO — FATO E DIMENSÕES (padrão fixo)
+    # ------------------------------------------------------------------
+    st.markdown('<h4 class="section-header">🗂️ Modelo de Dados Padrão</h4>', unsafe_allow_html=True)
+    st.caption("Use exatamente estes nomes de tabela e coluna nos exercícios guiados abaixo — é sobre eles que o corretor valida.")
 
     col_fato, col_dim = st.columns([1.3, 1])
 
@@ -980,6 +1070,11 @@ with tab3:
     # ------------------------------------------------------------------
     st.markdown('<h4 class="section-header">🆓 Modo Livre</h4>', unsafe_allow_html=True)
     st.caption("Escreva qualquer fórmula DAX para ver o destaque de sintaxe e receber avisos gerais de boas práticas (sem exercício associado).")
+
+    dados_setor_livre = st.session_state.get("dax_dados_setor")
+    if dados_setor_livre:
+        nomes_tabelas_livre = ", ".join(f"`{k}`" for k in dados_setor_livre.keys())
+        st.info(f"🏢 Modelo de setor disponível ({st.session_state.get('dax_setor_atual')}): {nomes_tabelas_livre}")
 
     codigo_livre = st.text_area(
         "Sua fórmula livre:",
