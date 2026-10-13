@@ -28,8 +28,10 @@ from ui import (
     render_resultado,
     render_sidebar,
 )
+from esconder_selo import esconder_selo_streamlit
 
 st.set_page_config(**PAGE_CONFIG)
+esconder_selo_streamlit()  # oculta os controles do Streamlit Cloud
 
 _SAMPLE_SIZE = 2_000
 
